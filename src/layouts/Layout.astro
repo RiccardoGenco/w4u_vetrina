@@ -3,6 +3,8 @@ import '../styles/global.css';
 import Logo from '../components/Logo.astro';
 import Footer from '../components/Footer.astro';
 import { appLink } from '../config';
+import { ClientRouter } from 'astro:transitions';
+import MotionDirector from '../components/MotionDirector.astro';
 
 interface Props {
   title?: string;
@@ -10,6 +12,7 @@ interface Props {
   canonical?: string;
   noindex?: boolean;
   schema?: Record<string, unknown> | Record<string, unknown>[];
+  socialImage?: string | false;
 }
 
 const {
@@ -18,12 +21,15 @@ const {
   canonical = Astro.url.pathname,
   noindex = false,
   schema,
+  socialImage: socialImagePath = '/og.png',
 } = Astro.props;
 
 const siteUrl = Astro.site ?? new URL('http://localhost:4321');
 const canonicalUrl = new URL(canonical, siteUrl);
-const socialImage = new URL('/og.png', siteUrl);
+const socialImage = socialImagePath ? new URL(socialImagePath, siteUrl) : undefined;
 const schemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
+const currentPath = Astro.url.pathname;
+const isCurrent = (path: string) => path === '/' ? currentPath === '/' : currentPath.startsWith(path);
 ---
 
 <!doctype html>
@@ -44,13 +50,14 @@ const schemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:image" content={socialImage} />
-    <meta property="og:image:alt" content="W4U — Dalla tua idea a un libro vero" />
+    {socialImage && <meta property="og:image" content={socialImage} />}
+    {socialImage && <meta property="og:image:alt" content="W4U — Dalla tua idea a un libro vero" />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={socialImage} />
+    {socialImage && <meta name="twitter:image" content={socialImage} />}
     {schemas.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item).replace(/</g, '\\u003c')} />)}
+    <ClientRouter />
     <script is:inline>
       (() => {
         const stored = localStorage.getItem('w4u-theme');
@@ -61,15 +68,16 @@ const schemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
   </head>
   <body>
     <a class="skip-link" href="#contenuto">Vai al contenuto</a>
+    <MotionDirector />
     <header class="site-header">
       <div class="site-shell nav-shell">
         <Logo />
         <nav class="desktop-nav" aria-label="Navigazione principale">
-          <a href="/come-funziona/">Come funziona</a>
-          <a href="/funzionalita/">Funzionalità</a>
-          <a href="/soluzioni/">Per chi è</a>
-          <a href="/risorse/">Risorse</a>
-          <a href="/prezzi/">Prezzi</a>
+          <a href="/come-funziona/" aria-current={isCurrent('/come-funziona/') ? 'page' : undefined}>Come funziona</a>
+          <a href="/funzionalita/" aria-current={isCurrent('/funzionalita/') ? 'page' : undefined}>Funzionalità</a>
+          <a href="/soluzioni/" aria-current={isCurrent('/soluzioni/') ? 'page' : undefined}>Per chi è</a>
+          <a href="/risorse/" aria-current={isCurrent('/risorse/') ? 'page' : undefined}>Risorse</a>
+          <a href="/prezzi/" aria-current={isCurrent('/prezzi/') ? 'page' : undefined}>Prezzi</a>
         </nav>
         <div class="nav-actions">
           <button class="theme-toggle" type="button" aria-label="Cambia tema" data-theme-toggle><span aria-hidden="true">◐</span></button>

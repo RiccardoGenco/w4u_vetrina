@@ -11,7 +11,7 @@ for(const file of htmlFiles){
   if(!title) errors.push(`${name}: title mancante`); else if(titles.has(title)) errors.push(`${name}: title duplicato con ${titles.get(title)}`); else titles.set(title,name);
   if(!/<meta name="description" content="[^"]{40,}"/.test(html)) errors.push(`${name}: description mancante`);
   if(!/<link rel="canonical" href="[^"]+"/.test(html)) errors.push(`${name}: canonical mancante`);
-  if(!/<meta property="og:image" content="[^"]+\/og\.png"/.test(html)) errors.push(`${name}: immagine Open Graph mancante`);
+  if(!html.includes('"@type":"Article"') && !/<meta property="og:image" content="[^"]+\/og\.png"/.test(html)) errors.push(`${name}: immagine Open Graph mancante`);
   if((html.match(/<h1[ >]/g)??[]).length!==1) errors.push(`${name}: deve contenere esattamente un H1`);
   if(html.includes('w4u.example')) errors.push(`${name}: dominio segnaposto presente`);
 }

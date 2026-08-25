@@ -1,0 +1,81 @@
+<div class="manuscript-chrome" aria-hidden="true">
+  <div class="reading-progress"><i data-reading-progress></i></div>
+  <div class="chapter-indicator"><span data-chapter-number>01</span><i></i><b data-chapter-name>APERTURA</b></div>
+</div>
+
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+  let motionContext: gsap.Context | undefined;
+
+  const chapterNames: Record<string, string> = {
+    'hero-section': 'APERTURA', 'intro-section': 'PREMESSA', 'story-section': 'IL PERCORSO',
+    'contrast-section': 'IL METODO', 'features-section': 'L’INDICE', 'solutions-section': 'I LETTORI',
+    'formats-section': 'LE EDIZIONI', 'faq-section': 'LE NOTE', 'final-cta-wrap': 'IL PROSSIMO CAPITOLO',
+    'page-hero': 'APERTURA', 'article-shell': 'RISORSA', 'legal-shell': 'DOCUMENTO'
+  };
+
+  function initMotion() {
+    motionContext?.revert();
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const progress = document.querySelector<HTMLElement>('[data-reading-progress]');
+    if (progress) gsap.set(progress, { scaleX: 0, transformOrigin: 'left center' });
+
+    motionContext = gsap.context(() => {
+      if (progress) gsap.to(progress, { scaleX: 1, ease: 'none', scrollTrigger: { start: 0, end: 'max', scrub: 0.1 } });
+      const sections = [...document.querySelectorAll<HTMLElement>('main > section, main > article')];
+      const chapterNumber = document.querySelector<HTMLElement>('[data-chapter-number]');
+      const chapterName = document.querySelector<HTMLElement>('[data-chapter-name]');
+      sections.forEach((section, index) => {
+        const key = [...section.classList].find((name) => chapterNames[name]);
+        ScrollTrigger.create({ trigger: section, start: 'top 52%', end: 'bottom 52%', onToggle: ({ isActive }) => {
+          if (!isActive) return;
+          if (chapterNumber) chapterNumber.textContent = String(index + 1).padStart(2, '0');
+          if (chapterName) chapterName.textContent = (section.dataset.chapter || (key && chapterNames[key]) || 'W4U');
+        }});
+      });
+      if (reduceMotion) return;
+
+      const revealTargets = document.querySelectorAll<HTMLElement>('.section-heading, .intro-grid > *, .feature-card, .solution-card, .format-stack article, .faq-item, .timeline article, .feature-detail-list article, .mini-step-grid article, .values-grid article, .contact-grid article, .resource-card, .editorial-note, .audience-grid, .pricing-card, .pricing-copy, .manifesto, .article-header, .article-body > *, .legal-notice');
+      revealTargets.forEach((target) => {
+        gsap.fromTo(target, { y: 54, opacity: 0, clipPath: 'inset(0 0 16% 0)' }, { y: 0, opacity: 1, clipPath: 'inset(0 0 0% 0)', duration: .9, ease: 'power3.out', scrollTrigger: { trigger: target, start: 'top 88%', once: true } });
+      });
+
+      if (document.querySelector('.hero-orb-one')) gsap.to('.hero-orb-one', { yPercent: 42, xPercent: -16, rotate: 35, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1 } });
+      if (document.querySelector('.hero-orb-two')) gsap.to('.hero-orb-two', { yPercent: -34, xPercent: 20, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1 } });
+      if (document.querySelector('.book-preview')) gsap.to('.book-preview', { y: -34, rotate: -5, duration: 3.2, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+      if (document.querySelector('.floating-chip')) gsap.to('.floating-chip', { y: (index) => index ? 14 : -16, duration: 2.6, repeat: -1, yoyo: true, stagger: .35, ease: 'sine.inOut' });
+
+      const heroObject = document.querySelector<HTMLElement>('[data-hero-object]');
+      const mockWindow = heroObject?.querySelector<HTMLElement>('.mock-window');
+      if (heroObject && mockWindow && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        const move = (event: PointerEvent) => {
+          const box = heroObject.getBoundingClientRect();
+          const x = (event.clientX - box.left) / box.width - .5;
+          const y = (event.clientY - box.top) / box.height - .5;
+          gsap.to(mockWindow, { rotateY: x * 9 - 3, rotateX: y * -7 + 1, x: x * 10, y: y * 8, duration: .65, ease: 'power3.out' });
+        };
+        const leave = () => gsap.to(mockWindow, { rotateY: -3, rotateX: 1, x: 0, y: 0, duration: .9, ease: 'elastic.out(1,.45)' });
+        heroObject.addEventListener('pointermove', move); heroObject.addEventListener('pointerleave', leave);
+        motionContext?.add(() => () => { heroObject.removeEventListener('pointermove', move); heroObject.removeEventListener('pointerleave', leave); });
+      }
+
+      const formatCards = gsap.utils.toArray<HTMLElement>('.format-stack article');
+      if (formatCards.length) gsap.fromTo(formatCards, { y: (index) => index * -70, rotate: (index) => (index - 1) * 7, scale: (index) => 1 - index * .04 }, { y: 0, rotate: 0, scale: 1, stagger: .08, ease: 'none', scrollTrigger: { trigger: '.formats-section', start: 'top 78%', end: 'center 45%', scrub: .7 } });
+
+      const solutionCards = gsap.utils.toArray<HTMLElement>('.solution-card');
+      solutionCards.forEach((card, index) => gsap.fromTo(card, { rotate: index % 2 ? 2.4 : -2.4, y: 40 + index * 12 }, { rotate: 0, y: 0, ease: 'none', scrollTrigger: { trigger: card, start: 'top 95%', end: 'top 60%', scrub: .5 } }));
+
+      if (document.querySelector('.final-cover')) gsap.fromTo('.final-cover', { x: 120, rotate: 14, scale: .82 }, { x: 0, rotate: 2, scale: 1, ease: 'none', scrollTrigger: { trigger: '.final-cta', start: 'top 88%', end: 'center 55%', scrub: .8 } });
+      if (document.querySelector('.page-two')) gsap.fromTo('.page-two', { x: 180, rotate: 24 }, { x: 0, rotate: 8, ease: 'none', scrollTrigger: { trigger: '.final-cta', start: 'top 92%', end: 'center 58%', scrub: .8 } });
+      if (document.querySelector('.page-three')) gsap.fromTo('.page-three', { x: 240, rotate: 34 }, { x: 0, rotate: 14, ease: 'none', scrollTrigger: { trigger: '.final-cta', start: 'top 96%', end: 'center 60%', scrub: .8 } });
+    });
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+  }
+
+  document.addEventListener('astro:page-load', initMotion);
+  document.addEventListener('astro:before-swap', () => motionContext?.revert());
+</script>

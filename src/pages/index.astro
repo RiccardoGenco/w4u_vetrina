@@ -13,12 +13,14 @@ const schema = [
 ];
 ---
 <Layout schema={schema}>
-  <section class="hero-section">
+  <section class="hero-section living-hero" data-manuscript-hero data-chapter="APERTURA">
     <div class="hero-orb hero-orb-one" aria-hidden="true"></div><div class="hero-orb hero-orb-two" aria-hidden="true"></div>
+    <div class="hero-folio" aria-hidden="true"><span>MANOSCRITTO</span><i></i><b>01</b></div>
     <div class="site-shell hero-grid">
-      <div class="hero-copy"><div class="eyebrow"><span></span> IL TUO LIBRO, PASSO DOPO PASSO</div><h1>Dalla tua idea a un libro <em>vero.</em></h1><p class="hero-lead">W4U ti intervista, costruisce la struttura insieme a te e trasforma ciò che sai in un libro modificabile, impaginato e pronto da scaricare.</p><div class="hero-actions"><a class="button" href={appLink('/register')}>Crea il tuo primo progetto <span>→</span></a><a class="text-link" href="#percorso">Guarda il percorso <span>↓</span></a></div><p class="hero-note"><span>✓</span> Parti anche da un’idea ancora incompleta.</p></div>
-      <ProductMockup />
+      <div class="hero-copy manuscript-hero-copy"><div class="eyebrow"><span></span> IL TUO LIBRO, PASSO DOPO PASSO</div><h1 aria-label="Dalla tua idea a un libro vero."><span class="hero-line">Dalla tua idea</span><span class="hero-line hero-line-indent">a un libro <em>vero.</em></span></h1><p class="hero-lead">W4U ti intervista, costruisce la struttura insieme a te e trasforma ciò che sai in un libro modificabile, impaginato e pronto da scaricare.</p><div class="hero-actions"><a class="button" href={appLink('/register')}>Crea il tuo primo progetto <span>→</span></a><a class="text-link" href="#percorso">Guarda il percorso <span>↓</span></a></div><p class="hero-note"><span>✓</span> Parti anche da un’idea ancora incompleta.</p><aside class="hero-margin-note" aria-hidden="true"><i>Nota 01</i><p>Ogni libro comincia quando un’idea trova il suo ordine.</p></aside></div>
+      <div class="hero-object" data-hero-object><div class="hero-object-rings" aria-hidden="true"><i></i><i></i><i></i></div><ProductMockup /></div>
     </div>
+    <div class="hero-reading-cue site-shell" aria-hidden="true"><span>SCORRI PER APRIRE IL MANOSCRITTO</span><i></i><b>↓</b></div>
     <div class="site-shell proof-strip" aria-label="Caratteristiche principali"><div><strong>8</strong><span>fasi guidate</span></div><div><strong>33</strong><span>macro-categorie editoriali</span></div><div><strong>264</strong><span>sottocategorie</span></div><div><strong>PDF · EPUB · DOCX</strong><span>formati di esportazione</span></div></div>
   </section>
 

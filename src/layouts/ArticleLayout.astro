@@ -5,7 +5,7 @@ import FinalCta from '../components/FinalCta.astro';
 const { title, description, pubDate, updatedDate, category } = Astro.props;
 const schema = { '@context':'https://schema.org', '@type':'Article', headline:title, description, datePublished:pubDate.toISOString(), dateModified:(updatedDate ?? pubDate).toISOString(), author:{'@type':'Organization',name:'W4U'}, publisher:{'@type':'Organization',name:'W4U'}, mainEntityOfPage:Astro.url.href };
 ---
-<Layout title={`${title} | W4U`} description={description} schema={schema}>
+<Layout title={`${title} | W4U`} description={description} schema={schema} socialImage={false}>
   <Breadcrumbs items={[{label:'Risorse',href:'/risorse/'},{label:title}]} />
   <article class="article-shell site-shell">
     <header class="article-header"><span class="tag">{category}</span><h1>{title}</h1><p>{description}</p><div><time datetime={pubDate.toISOString()}>{pubDate.toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'})}</time><span> · Lettura 6 min</span></div></header>
