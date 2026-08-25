@@ -16,16 +16,33 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
   }, []);
 
   const current = steps[active];
+  const noteFor = (index: number) => index === 0
+    ? 'Il punto di partenza non deve essere perfetto.'
+    : index === 4
+      ? 'Qui l’idea diventa una vera architettura.'
+      : index === 7
+        ? 'Il manoscritto lascia la piattaforma.'
+        : '';
+
   return (
     <div className="story-layout living-story">
       <div className="story-copy">
-        {steps.map((step, index) => (
-          <article key={step.number} ref={(node) => { refs.current[index] = node; }} data-step={index} className={index === active ? 'is-active' : ''}>
-            <div className="story-copy-folio"><span>{step.number}</span><i></i><small>{step.short}</small></div>
-            <h3>{step.title}</h3><p>{step.text}</p>
-            <div className="story-copy-note" aria-hidden="true">{index === 0 ? 'Il punto di partenza non deve essere perfetto.' : index === 4 ? 'Qui l’idea diventa una vera architettura.' : index === 7 ? 'Il manoscritto lascia la piattaforma.' : ''}</div>
-          </article>
-        ))}
+        <div className="story-copy-sticky" aria-hidden="true" key={current.number}>
+          <div className="story-copy-folio"><span>{current.number}</span><i></i><small>{current.short}</small></div>
+          <h3>{current.title}</h3><p>{current.text}</p>
+          <div className="story-copy-note">{noteFor(active)}</div>
+        </div>
+        <div className="story-triggers">
+          {steps.map((step, index) => (
+            <article key={step.number} ref={(node) => { refs.current[index] = node; }} data-step={index} className={`story-trigger ${index === active ? 'is-active' : ''}`}>
+              <div className="story-trigger-content">
+                <div className="story-copy-folio"><span>{step.number}</span><i></i><small>{step.short}</small></div>
+                <h3>{step.title}</h3><p>{step.text}</p>
+                {noteFor(index) && <div className="story-copy-note">{noteFor(index)}</div>}
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
       <aside className={`story-stage manuscript-stage manuscript-stage-${active + 1}`} aria-live="polite">
         <div className="story-stage-top"><span>W4U · MANOSCRITTO IN LAVORAZIONE</span><b>{current.number} / 08</b></div>

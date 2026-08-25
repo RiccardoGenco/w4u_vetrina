@@ -93,20 +93,37 @@ const isCurrent = (path: string) => path === '/' ? currentPath === '/' : current
     <main id="contenuto"><slot /></main>
     <Footer />
     <script>
-      const toggle = document.querySelector('[data-theme-toggle]');
-      toggle?.addEventListener('click', () => {
-        const root = document.documentElement;
-        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-        root.dataset.theme = next;
-        localStorage.setItem('w4u-theme', next);
-      });
-      const menuToggle = document.querySelector('[data-menu-toggle]');
-      const mobileNav = document.querySelector('[data-mobile-nav]');
-      menuToggle?.addEventListener('click', () => {
-        const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
-        menuToggle.setAttribute('aria-expanded', String(!expanded));
-        if (mobileNav instanceof HTMLElement) mobileNav.hidden = expanded;
-      });
+      function bindHeaderControls() {
+        const toggle = document.querySelector<HTMLElement>('[data-theme-toggle]');
+        if (toggle && !toggle.dataset.bound) {
+          toggle.dataset.bound = 'true';
+          toggle.addEventListener('click', () => {
+            const root = document.documentElement;
+            const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            root.dataset.theme = next;
+            localStorage.setItem('w4u-theme', next);
+          });
+        }
+
+        const menuToggle = document.querySelector<HTMLElement>('[data-menu-toggle]');
+        const mobileNav = document.querySelector<HTMLElement>('[data-mobile-nav]');
+        if (menuToggle && mobileNav && !menuToggle.dataset.bound) {
+          menuToggle.dataset.bound = 'true';
+          menuToggle.addEventListener('click', () => {
+            const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+            menuToggle.setAttribute('aria-expanded', String(!expanded));
+            mobileNav.hidden = expanded;
+          });
+          mobileNav.addEventListener('click', (event) => {
+            if (!(event.target instanceof HTMLAnchorElement)) return;
+            menuToggle.setAttribute('aria-expanded', 'false');
+            mobileNav.hidden = true;
+          });
+        }
+      }
+
+      bindHeaderControls();
+      document.addEventListener('astro:page-load', bindHeaderControls);
     </script>
   </body>
 </html>

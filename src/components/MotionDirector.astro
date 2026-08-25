@@ -4,11 +4,10 @@
 </div>
 
 <script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-  gsap.registerPlugin(ScrollTrigger);
-  let motionContext: gsap.Context | undefined;
+  let motionContext: { revert: () => void; add: (callback: () => (() => void)) => unknown } | undefined;
+  let scrollTriggerApi: { getAll: () => Array<{ kill: () => void }>; refresh: () => void } | undefined;
+  let nativeCleanup = () => {};
+  let motionRun = 0;
 
   const chapterNames: Record<string, string> = {
     'hero-section': 'APERTURA', 'intro-section': 'PREMESSA', 'story-section': 'IL PERCORSO',
@@ -17,28 +16,60 @@
     'page-hero': 'APERTURA', 'article-shell': 'RISORSA', 'legal-shell': 'DOCUMENTO'
   };
 
-  function initMotion() {
-    motionContext?.revert();
-    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function setupChrome() {
+    nativeCleanup();
     const progress = document.querySelector<HTMLElement>('[data-reading-progress]');
-    if (progress) gsap.set(progress, { scaleX: 0, transformOrigin: 'left center' });
+    const chapterNumber = document.querySelector<HTMLElement>('[data-chapter-number]');
+    const chapterName = document.querySelector<HTMLElement>('[data-chapter-name]');
+    const chapterIndicator = document.querySelector<HTMLElement>('.chapter-indicator');
+    const sections = [...document.querySelectorAll<HTMLElement>('main > section, main > article')];
+
+    const updateProgress = () => {
+      if (!progress) return;
+      const scrollable = document.documentElement.scrollHeight - innerHeight;
+      progress.style.transform = `scaleX(${scrollable > 0 ? Math.min(1, scrollY / scrollable) : 0})`;
+    };
+    updateProgress();
+    addEventListener('scroll', updateProgress, { passive: true });
+    addEventListener('resize', updateProgress, { passive: true });
+
+    const observer = new IntersectionObserver((entries) => {
+      const active = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!active) return;
+      const section = active.target as HTMLElement;
+      const index = sections.indexOf(section);
+      const key = [...section.classList].find((name) => chapterNames[name]);
+      if (chapterNumber) chapterNumber.textContent = String(index + 1).padStart(2, '0');
+      if (chapterName) chapterName.textContent = section.dataset.chapter || (key && chapterNames[key]) || 'W4U';
+      chapterIndicator?.classList.toggle('is-hidden', index === 0 && section.classList.contains('hero-section'));
+    }, { rootMargin: '-46% 0px -46% 0px', threshold: 0 });
+    sections.forEach((section) => observer.observe(section));
+
+    nativeCleanup = () => {
+      removeEventListener('scroll', updateProgress);
+      removeEventListener('resize', updateProgress);
+      observer.disconnect();
+    };
+  }
+
+  async function initMotion() {
+    const run = ++motionRun;
+    motionContext?.revert();
+    scrollTriggerApi?.getAll().forEach((trigger) => trigger.kill());
+    setupChrome();
+
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || !document.querySelector('.living-hero')) return;
+
+    const [{ default: gsap }, { ScrollTrigger }] = await Promise.all([
+      import('gsap'),
+      import('gsap/ScrollTrigger')
+    ]);
+    if (run !== motionRun || !document.querySelector('.living-hero')) return;
+    gsap.registerPlugin(ScrollTrigger);
+    scrollTriggerApi = ScrollTrigger;
 
     motionContext = gsap.context(() => {
-      if (progress) gsap.to(progress, { scaleX: 1, ease: 'none', scrollTrigger: { start: 0, end: 'max', scrub: 0.1 } });
-      const sections = [...document.querySelectorAll<HTMLElement>('main > section, main > article')];
-      const chapterNumber = document.querySelector<HTMLElement>('[data-chapter-number]');
-      const chapterName = document.querySelector<HTMLElement>('[data-chapter-name]');
-      sections.forEach((section, index) => {
-        const key = [...section.classList].find((name) => chapterNames[name]);
-        ScrollTrigger.create({ trigger: section, start: 'top 52%', end: 'bottom 52%', onToggle: ({ isActive }) => {
-          if (!isActive) return;
-          if (chapterNumber) chapterNumber.textContent = String(index + 1).padStart(2, '0');
-          if (chapterName) chapterName.textContent = (section.dataset.chapter || (key && chapterNames[key]) || 'W4U');
-        }});
-      });
-      if (reduceMotion) return;
-
       const revealTargets = document.querySelectorAll<HTMLElement>('.section-heading, .intro-grid > *, .feature-card, .solution-card, .format-stack article, .faq-item, .timeline article, .feature-detail-list article, .mini-step-grid article, .values-grid article, .contact-grid article, .resource-card, .editorial-note, .audience-grid, .pricing-card, .pricing-copy, .manifesto, .article-header, .article-body > *, .legal-notice');
       revealTargets.forEach((target) => {
         gsap.fromTo(target, { y: 54, opacity: 0, clipPath: 'inset(0 0 16% 0)' }, { y: 0, opacity: 1, clipPath: 'inset(0 0 0% 0)', duration: .9, ease: 'power3.out', scrollTrigger: { trigger: target, start: 'top 88%', once: true } });
@@ -73,9 +104,13 @@
       if (document.querySelector('.page-two')) gsap.fromTo('.page-two', { x: 180, rotate: 24 }, { x: 0, rotate: 8, ease: 'none', scrollTrigger: { trigger: '.final-cta', start: 'top 92%', end: 'center 58%', scrub: .8 } });
       if (document.querySelector('.page-three')) gsap.fromTo('.page-three', { x: 240, rotate: 34 }, { x: 0, rotate: 14, ease: 'none', scrollTrigger: { trigger: '.final-cta', start: 'top 96%', end: 'center 60%', scrub: .8 } });
     });
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+    requestAnimationFrame(() => scrollTriggerApi?.refresh());
   }
 
   document.addEventListener('astro:page-load', initMotion);
-  document.addEventListener('astro:before-swap', () => motionContext?.revert());
+  document.addEventListener('astro:before-swap', () => {
+    motionRun += 1;
+    nativeCleanup();
+    motionContext?.revert();
+  });
 </script>

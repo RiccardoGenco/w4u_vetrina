@@ -7,7 +7,12 @@ const { eyebrow, title, description, cta = 'Crea il tuo progetto' } = Astro.prop
   <div class="page-orb" aria-hidden="true"></div>
   <div class="site-shell page-hero-grid">
     <div><div class="eyebrow"><span></span>{eyebrow}</div><h1>{title}</h1><p>{description}</p><a class="button" href={appLink('/register')}>{cta} <span>→</span></a></div>
-    <div class="page-hero-art" aria-hidden="true"><span>W4U</span><div><i></i><i></i><i></i><i></i></div><b>01 — 08</b></div>
+    <div class="page-hero-art" aria-hidden="true">
+      <span>W4U / {eyebrow}</span>
+      <strong>{eyebrow}</strong>
+      <p class="page-cover-title">{title}</p>
+      <div><i></i><i></i><i></i><i></i></div>
+      <b>01 — 08</b>
+    </div>
   </div>
 </section>
-
