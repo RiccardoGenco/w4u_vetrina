@@ -1,0 +1,5 @@
+---
+import Layout from '../../layouts/Layout.astro'; import PageHero from '../../components/PageHero.astro'; import Breadcrumbs from '../../components/Breadcrumbs.astro'; import FaqList from '../../components/FaqList.astro'; import FinalCta from '../../components/FinalCta.astro'; import { faqs } from '../../data/site';
+const schema={'@context':'https://schema.org','@type':'FAQPage',mainEntity:faqs.map((item)=>({'@type':'Question',name:item.question,acceptedAnswer:{'@type':'Answer',text:item.answer}}))};
+---
+<Layout title="Domande frequenti su W4U | FAQ" description="Risposte su come funziona W4U, controllo dell’autore, salvataggio dei progetti, categorie editoriali e formati PDF, EPUB e DOCX." schema={schema}><Breadcrumbs items={[{label:'FAQ'}]} /><PageHero eyebrow="FAQ" title="Tutto quello che vuoi sapere prima di iniziare." description="Il percorso, il ruolo dell’autore, i tipi di libro e i formati finali: qui trovi le risposte essenziali." /><section class="section-space"><div class="site-shell narrow"><FaqList /></div></section><FinalCta /></Layout>

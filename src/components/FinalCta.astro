@@ -1,0 +1,12 @@
+---
+import { appLink } from '../config';
+interface Props { title?: string; text?: string; }
+const { title = 'Il tuo libro può iniziare da qui.', text = 'Non serve avere già tutte le risposte. Serve un primo punto da cui partire.' } = Astro.props;
+---
+<section class="final-cta-wrap section-space">
+  <div class="site-shell final-cta">
+    <div class="final-cta-copy"><div class="eyebrow"><span></span> IL PROSSIMO CAPITOLO</div><h2>{title}</h2><p>{text}</p><a class="button" href={appLink('/register')}>Crea il tuo progetto <span>→</span></a></div>
+    <div class="final-stack" aria-hidden="true"><div class="final-page page-three"></div><div class="final-page page-two"></div><div class="final-cover"><span>W4U</span><b>LA TUA IDEA<br />PRENDE<br />FORMA</b><i></i><small>Il tuo nome</small></div></div>
+  </div>
+</section>
+

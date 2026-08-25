@@ -1,0 +1,15 @@
+---
+import Logo from './Logo.astro';
+import { appLink } from '../config';
+---
+
+<footer class="site-footer">
+  <div class="site-shell footer-grid">
+    <div class="footer-brand"><Logo /><p>Il percorso editoriale guidato che trasforma un’idea, un’esperienza o un metodo in un libro completo.</p><a class="button button-small" href={appLink('/register')}>Crea il tuo progetto <span>→</span></a></div>
+    <div><h2>Scopri</h2><a href="/come-funziona/">Come funziona</a><a href="/funzionalita/">Funzionalità</a><a href="/soluzioni/">Per chi è</a><a href="/prezzi/">Prezzi</a><a href="/faq/">FAQ</a></div>
+    <div><h2>Risorse</h2><a href="/risorse/">Guide</a><a href="/risorse/come-scrivere-un-libro/">Come scrivere un libro</a><a href="/risorse/come-creare-indice-libro/">Creare un indice</a><a href="/chi-siamo/">Chi siamo</a><a href="/contatti/">Contatti</a></div>
+    <div><h2>Informazioni</h2><a href="/privacy/">Privacy</a><a href="/cookie/">Cookie</a><a href="/termini/">Termini e condizioni</a><a href={appLink('/login')}>Accedi</a></div>
+  </div>
+  <div class="site-shell footer-bottom"><span>© 2026 W4U — Writing Wizard</span><p>Strumento di produzione editoriale assistita. I contenuti e la loro verifica restano sotto il controllo dell’autore.</p></div>
+</footer>
+

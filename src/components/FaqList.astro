@@ -1,0 +1,14 @@
+---
+import { faqs as defaultFaqs } from '../data/site';
+interface Props { items?: typeof defaultFaqs; compact?: boolean; }
+const { items = defaultFaqs, compact = false } = Astro.props;
+---
+<div class:list={['faq-list', compact && 'faq-list--compact']}>
+  {items.map((item, index) => (
+    <details class="faq-item">
+      <summary><span>{String(index + 1).padStart(2, '0')}</span><strong>{item.question}</strong><i aria-hidden="true">+</i></summary>
+      <div><p>{item.answer}</p></div>
+    </details>
+  ))}
+</div>
+

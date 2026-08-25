@@ -1,0 +1,5 @@
+---
+import Layout from './Layout.astro'; import Breadcrumbs from '../components/Breadcrumbs.astro';
+const {title,description}=Astro.props;
+---
+<Layout title={`${title} | W4U`} description={description} noindex><Breadcrumbs items={[{label:title}]} /><article class="site-shell legal-shell"><header><span class="tag">BOZZA DA VALIDARE</span><h1>{title}</h1><p>{description}</p></header><div class="legal-notice"><strong>Documento non definitivo</strong><p>Questa pagina definisce struttura e stile del contenuto legale, ma dovrà essere compilata e approvata da un referente legale prima della pubblicazione.</p></div><div class="article-body"><slot /></div></article></Layout>

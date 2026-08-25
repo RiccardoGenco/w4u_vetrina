@@ -1,0 +1,39 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProductMockup from '../components/ProductMockup.astro';
+import ScrollStory from '../components/react/ScrollStory';
+import FaqList from '../components/FaqList.astro';
+import FinalCta from '../components/FinalCta.astro';
+import { appLink } from '../config';
+import { processSteps, features, solutions, faqs } from '../data/site';
+const schema = [
+  {'@context':'https://schema.org','@type':'Organization',name:'W4U',url:Astro.site?.href},
+  {'@context':'https://schema.org','@type':'WebSite',name:'W4U',url:Astro.site?.href,description:'Percorso editoriale guidato per trasformare idee ed esperienza in un libro.'},
+  {'@context':'https://schema.org','@type':'SoftwareApplication',name:'W4U',applicationCategory:'BusinessApplication',operatingSystem:'Web',description:'Piattaforma di produzione editoriale assistita con percorso in otto fasi.'}
+];
+---
+<Layout schema={schema}>
+  <section class="hero-section">
+    <div class="hero-orb hero-orb-one" aria-hidden="true"></div><div class="hero-orb hero-orb-two" aria-hidden="true"></div>
+    <div class="site-shell hero-grid">
+      <div class="hero-copy"><div class="eyebrow"><span></span> IL TUO LIBRO, PASSO DOPO PASSO</div><h1>Dalla tua idea a un libro <em>vero.</em></h1><p class="hero-lead">W4U ti intervista, costruisce la struttura insieme a te e trasforma ciò che sai in un libro modificabile, impaginato e pronto da scaricare.</p><div class="hero-actions"><a class="button" href={appLink('/register')}>Crea il tuo primo progetto <span>→</span></a><a class="text-link" href="#percorso">Guarda il percorso <span>↓</span></a></div><p class="hero-note"><span>✓</span> Parti anche da un’idea ancora incompleta.</p></div>
+      <ProductMockup />
+    </div>
+    <div class="site-shell proof-strip" aria-label="Caratteristiche principali"><div><strong>8</strong><span>fasi guidate</span></div><div><strong>33</strong><span>macro-categorie editoriali</span></div><div><strong>264</strong><span>sottocategorie</span></div><div><strong>PDF · EPUB · DOCX</strong><span>formati di esportazione</span></div></div>
+  </section>
+
+  <section id="percorso" class="intro-section section-space"><div class="site-shell intro-grid"><div><div class="eyebrow"><span></span> NON UNA CHAT VUOTA</div><h2>Un ambiente costruito intorno al tuo libro.</h2></div><div class="intro-copy"><p>La pagina bianca lascia spazio a un percorso editoriale chiaro. Tu porti l’esperienza, le idee e la voce. W4U ti aiuta a organizzarle, svilupparle e trasformarle in un progetto completo.</p><a class="text-link" href="/come-funziona/">Scopri come funziona <span>→</span></a></div></div></section>
+
+  <section class="story-section section-space"><div class="site-shell section-heading"><div class="eyebrow"><span></span> SCROLLSTORY · 8 FASI</div><h2>Ogni decisione arriva<br />nel momento giusto.</h2><p>Scorri il percorso: dall’idea iniziale fino ai file del tuo libro.</p></div><div class="site-shell"><ScrollStory steps={processSteps} client:visible /></div></section>
+
+  <section class="contrast-section section-space"><div class="site-shell"><div class="section-heading centered"><div class="eyebrow"><span></span> DAL PROMPT AL PROGETTO</div><h2>Non ti consegna soltanto testo.<br />Ti aiuta a costruire un libro.</h2></div><div class="contrast-grid"><article class="contrast-muted"><span>CHAT GENERICA</span><h3>Una risposta alla volta.</h3><ul><li>Devi sapere cosa chiedere</li><li>La struttura dipende dai tuoi prompt</li><li>Le decisioni restano sparse</li><li>L’impaginazione arriva dopo</li></ul></article><article class="contrast-featured"><span>PERCORSO W4U</span><h3>Un progetto che avanza.</h3><ul><li>Domande pensate per il tuo libro</li><li>Indice approvato prima dei capitoli</li><li>Stato salvato e sempre riprendibile</li><li>Copertina ed export nello stesso flusso</li></ul></article></div></div></section>
+
+  <section class="features-section section-space"><div class="site-shell"><div class="section-heading"><div class="eyebrow"><span></span> TUTTO NELLO STESSO AMBIENTE</div><h2>Dall’intuizione ai file finali.</h2><p>Un flusso coerente, progettato per mantenere controllo su direzione, contenuto e risultato.</p></div><div class="card-grid">{features.map((feature) => <a class="feature-card" href={feature.href}><span>{feature.icon}</span><h3>{feature.title}</h3><p>{feature.text}</p><i>Approfondisci →</i></a>)}</div></div></section>
+
+  <section class="solutions-section section-space"><div class="site-shell"><div class="section-heading split"><div><div class="eyebrow"><span></span> UNA STRUTTURA, MOLTE STORIE</div><h2>Il tuo sapere ha già<br />un possibile lettore.</h2></div><a class="text-link" href="/soluzioni/">Esplora tutte le soluzioni <span>→</span></a></div><div class="solution-grid">{solutions.map((solution,index) => <a class="solution-card" href={`/soluzioni/${solution.slug}/`}><span>0{index+1}</span><small>{solution.eyebrow}</small><h3>{solution.title}</h3><p>{solution.description}</p><i>Scopri il percorso →</i></a>)}</div></div></section>
+
+  <section class="formats-section section-space"><div class="site-shell formats-grid"><div><div class="eyebrow"><span></span> PORTALO CON TE</div><h2>Il risultato non resta chiuso nella piattaforma.</h2><p>Esporta il progetto nei formati più utili per leggere, condividere, revisionare o proseguire il lavoro.</p></div><div class="format-stack" aria-label="Formati disponibili"><article><b>PDF</b><span>Per una versione impaginata e pronta da leggere.</span></article><article><b>EPUB</b><span>Per ebook e dispositivi di lettura compatibili.</span></article><article><b>DOCX</b><span>Per continuare revisione e collaborazione.</span></article></div></div></section>
+
+  <section class="faq-section section-space"><div class="site-shell faq-grid"><div class="section-heading"><div class="eyebrow"><span></span> DOMANDE FREQUENTI</div><h2>Prima di iniziare.</h2><p>Le risposte essenziali sul percorso, sul controllo dei contenuti e sui formati finali.</p><a class="text-link" href="/faq/">Vedi tutte le risposte <span>→</span></a></div><FaqList items={faqs.slice(0,5)} compact /></div></section>
+  <FinalCta />
+</Layout>
