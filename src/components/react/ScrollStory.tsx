@@ -1,21 +1,41 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Step = { number: string; short: string; title: string; text: string };
+type PageTurn = { from: number; to: number; direction: 'forward' | 'backward'; id: number };
 
 export default function ScrollStory({ steps }: { steps: Step[] }) {
   const [active, setActive] = useState(0);
+  const [pageTurn, setPageTurn] = useState<PageTurn | null>(null);
   const refs = useRef<Array<HTMLElement | null>>([]);
+  const activeRef = useRef(0);
+  const turnTimer = useRef<number | undefined>(undefined);
+
+  const activateStep = useCallback((next: number) => {
+    const previous = activeRef.current;
+    if (previous === next) return;
+    activeRef.current = next;
+    const turn = { from: previous, to: next, direction: next > previous ? 'forward' : 'backward', id: Date.now() } as PageTurn;
+    setPageTurn(turn);
+    setActive(next);
+    window.clearTimeout(turnTimer.current);
+    turnTimer.current = window.setTimeout(() => setPageTurn(null), 980);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (visible) setActive(Number((visible.target as HTMLElement).dataset.step));
+      if (visible) activateStep(Number((visible.target as HTMLElement).dataset.step));
     }, { rootMargin: '-32% 0px -40% 0px', threshold: [0.15, 0.4, 0.7] });
     refs.current.forEach((node) => node && observer.observe(node));
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(turnTimer.current);
+    };
+  }, [activateStep]);
 
   const current = steps[active];
+  const turningFrom = pageTurn ? steps[pageTurn.from] : current;
+  const turningTo = pageTurn ? steps[pageTurn.to] : current;
   const noteFor = (index: number) => index === 0
     ? 'Il punto di partenza non deve essere perfetto.'
     : index === 4
@@ -48,15 +68,33 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
         <div className="story-stage-top"><span>W4U · MANOSCRITTO IN LAVORAZIONE</span><b>{current.number} / 08</b></div>
         <div className="manuscript-desk">
           <div className="page-shadow page-shadow-two" aria-hidden="true"></div><div className="page-shadow page-shadow-one" aria-hidden="true"></div>
-          <div className="manuscript-spread" key={current.number}>
-            <div className="manuscript-page manuscript-page-left"><span className="page-running-head">W4U / {current.short}</span><div className="page-ghost-number">{current.number}</div><div className="page-rule"></div><small>FASE {current.number}</small><strong>{current.short}</strong><i className="page-folio">{String(active * 4 + 1).padStart(2, '0')}</i></div>
-            <div className="manuscript-spine" aria-hidden="true"></div>
-            <div className="manuscript-page manuscript-page-right"><span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {current.number}</small><h4>{current.title}</h4><p>{current.text}</p><div className="page-writing-lines" aria-hidden="true"><i></i><i></i><i></i></div><i className="page-folio">{String(active * 4 + 2).padStart(2, '0')}</i></div>
+          <div className="manuscript-book">
+            <div className="manuscript-spread">
+              <div className="manuscript-page manuscript-page-left"><span className="page-running-head">W4U / {current.short}</span><div className="page-ghost-number">{current.number}</div><div className="page-rule"></div><small>FASE {current.number}</small><strong>{current.short}</strong><i className="page-folio">{String(active * 4 + 1).padStart(2, '0')}</i></div>
+              <div className="manuscript-spine" aria-hidden="true"></div>
+              <div className="manuscript-page manuscript-page-right"><span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {current.number}</small><h4>{current.title}</h4><p>{current.text}</p><div className="page-writing-lines" aria-hidden="true"><i></i><i></i><i></i></div><i className="page-folio">{String(active * 4 + 2).padStart(2, '0')}</i></div>
+            </div>
+            {pageTurn && <div className={`manuscript-turning-page is-${pageTurn.direction}`} key={pageTurn.id} aria-hidden="true" onAnimationEnd={() => setPageTurn((turn) => turn?.id === pageTurn.id ? null : turn)}>
+              <div className="turning-page-face turning-page-front">
+                {pageTurn.direction === 'forward' ? <>
+                  <span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {turningFrom.number}</small><h4>{turningFrom.title}</h4><p>{turningFrom.text}</p><div className="page-writing-lines"><i></i><i></i><i></i></div>
+                </> : <>
+                  <span className="page-running-head">W4U / {turningFrom.short}</span><div className="page-ghost-number">{turningFrom.number}</div><div className="page-rule"></div><small>FASE {turningFrom.number}</small><strong>{turningFrom.short}</strong>
+                </>}
+              </div>
+              <div className="turning-page-face turning-page-back">
+                {pageTurn.direction === 'forward' ? <>
+                  <span className="page-running-head">W4U / {turningTo.short}</span><div className="page-ghost-number">{turningTo.number}</div><div className="page-rule"></div><small>FASE {turningTo.number}</small><strong>{turningTo.short}</strong>
+                </> : <>
+                  <span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {turningTo.number}</small><h4>{turningTo.title}</h4><p>{turningTo.text}</p><div className="page-writing-lines"><i></i><i></i><i></i></div>
+                </>}
+              </div>
+            </div>}
           </div>
           <div className="manuscript-annotation" aria-hidden="true"><span>NOTA</span><i></i><p>{active < 2 ? 'Ascolta prima di scrivere.' : active < 5 ? 'Ogni scelta prepara la successiva.' : active < 7 ? 'La tua voce resta al centro.' : 'Ora il libro è pronto a uscire.'}</p></div>
         </div>
         <div className="story-stage-footer">
-          <span>{current.short}</span><nav aria-label="Progresso del percorso">{steps.map((step, index) => <button key={step.number} className={index === active ? 'active' : index < active ? 'done' : ''} onClick={() => refs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' })} aria-label={`Vai alla fase ${step.number}: ${step.short}`}><i></i><b>{step.number}</b></button>)}</nav><span>{Math.round(((active + 1) / steps.length) * 100)}%</span>
+          <span>{current.short}</span><nav aria-label="Progresso del percorso">{steps.map((step, index) => <button key={step.number} className={index === active ? 'active' : index < active ? 'done' : ''} onClick={() => { activateStep(index); refs.current[index]?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }} aria-label={`Vai alla fase ${step.number}: ${step.short}`}><i></i><b>{step.number}</b></button>)}</nav><span>{Math.round(((active + 1) / steps.length) * 100)}%</span>
         </div>
       </aside>
     </div>
