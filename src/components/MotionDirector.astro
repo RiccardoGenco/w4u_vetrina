@@ -77,7 +77,6 @@
 
       if (document.querySelector('.hero-orb-one')) gsap.to('.hero-orb-one', { yPercent: 42, xPercent: -16, rotate: 35, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1 } });
       if (document.querySelector('.hero-orb-two')) gsap.to('.hero-orb-two', { yPercent: -34, xPercent: 20, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 1 } });
-      if (document.querySelector('.book-preview')) gsap.to('.book-preview', { y: -34, rotate: -5, duration: 3.2, repeat: -1, yoyo: true, ease: 'sine.inOut' });
       if (document.querySelector('.floating-chip')) gsap.to('.floating-chip', { y: (index) => index ? 14 : -16, duration: 2.6, repeat: -1, yoyo: true, stagger: .35, ease: 'sine.inOut' });
 
       const heroObject = document.querySelector<HTMLElement>('[data-hero-object]');

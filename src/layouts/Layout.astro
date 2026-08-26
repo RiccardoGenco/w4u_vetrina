@@ -60,9 +60,20 @@ const isCurrent = (path: string) => path === '/' ? currentPath === '/' : current
     <ClientRouter />
     <script is:inline>
       (() => {
-        const stored = localStorage.getItem('w4u-theme');
-        const theme = stored || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-        document.documentElement.dataset.theme = theme;
+        const preferredTheme = () => localStorage.getItem('w4u-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        const applyTheme = () => {
+          const theme = preferredTheme();
+          document.documentElement.dataset.theme = theme;
+          document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#f8fafc' : '#050505');
+        };
+
+        applyTheme();
+        document.addEventListener('astro:before-swap', (event) => {
+          const theme = preferredTheme();
+          event.newDocument.documentElement.dataset.theme = theme;
+          event.newDocument.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#f8fafc' : '#050505');
+        });
+        document.addEventListener('astro:after-swap', applyTheme);
       })();
     </script>
   </head>
@@ -88,22 +99,38 @@ const isCurrent = (path: string) => path === '/' ? currentPath === '/' : current
       </div>
       <nav class="mobile-nav" aria-label="Navigazione mobile" data-mobile-nav hidden>
         <a href="/come-funziona/">Come funziona</a><a href="/funzionalita/">Funzionalità</a><a href="/soluzioni/">Per chi è</a><a href="/risorse/">Risorse</a><a href="/prezzi/">Prezzi</a><a href="/faq/">FAQ</a>
+        <button class="mobile-theme-toggle" type="button" data-theme-toggle>
+          <span aria-hidden="true">◐</span><span data-theme-label>Cambia tema</span>
+        </button>
       </nav>
     </header>
     <main id="contenuto"><slot /></main>
     <Footer />
     <script>
       function bindHeaderControls() {
-        const toggle = document.querySelector<HTMLElement>('[data-theme-toggle]');
-        if (toggle && !toggle.dataset.bound) {
+        const syncThemeControls = () => {
+          const isLight = document.documentElement.dataset.theme === 'light';
+          document.querySelectorAll<HTMLElement>('[data-theme-toggle]').forEach((control) => {
+            control.setAttribute('aria-label', isLight ? 'Attiva tema scuro' : 'Attiva tema chiaro');
+            control.setAttribute('aria-pressed', String(isLight));
+            const label = control.querySelector<HTMLElement>('[data-theme-label]');
+            if (label) label.textContent = isLight ? 'Tema scuro' : 'Tema chiaro';
+          });
+        };
+
+        document.querySelectorAll<HTMLElement>('[data-theme-toggle]').forEach((toggle) => {
+          if (toggle.dataset.bound) return;
           toggle.dataset.bound = 'true';
           toggle.addEventListener('click', () => {
             const root = document.documentElement;
             const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
             root.dataset.theme = next;
             localStorage.setItem('w4u-theme', next);
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', next === 'light' ? '#f8fafc' : '#050505');
+            syncThemeControls();
           });
-        }
+        });
+        syncThemeControls();
 
         const menuToggle = document.querySelector<HTMLElement>('[data-menu-toggle]');
         const mobileNav = document.querySelector<HTMLElement>('[data-mobile-nav]');
