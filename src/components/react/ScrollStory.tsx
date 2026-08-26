@@ -5,21 +5,44 @@ type PageTurn = { from: number; to: number; direction: 'forward' | 'backward'; i
 
 export default function ScrollStory({ steps }: { steps: Step[] }) {
   const [active, setActive] = useState(0);
+  const [bookActive, setBookActive] = useState(0);
   const [pageTurn, setPageTurn] = useState<PageTurn | null>(null);
   const refs = useRef<Array<HTMLElement | null>>([]);
   const activeRef = useRef(0);
+  const bookActiveRef = useRef(0);
+  const pageTurnRef = useRef<PageTurn | null>(null);
   const turnTimer = useRef<number | undefined>(undefined);
 
+  const completePageTurn = useCallback((id: number) => {
+    const turn = pageTurnRef.current;
+    if (!turn || turn.id !== id) return;
+    bookActiveRef.current = turn.to;
+    setBookActive(turn.to);
+    pageTurnRef.current = null;
+    setPageTurn(null);
+  }, []);
+
   const activateStep = useCallback((next: number) => {
-    const previous = activeRef.current;
-    if (previous === next) return;
+    if (activeRef.current === next) return;
+    const pending = pageTurnRef.current;
+    const previous = pending?.to ?? bookActiveRef.current;
+    if (pending) {
+      bookActiveRef.current = previous;
+      setBookActive(previous);
+    }
     activeRef.current = next;
-    const turn = { from: previous, to: next, direction: next > previous ? 'forward' : 'backward', id: Date.now() } as PageTurn;
-    setPageTurn(turn);
     setActive(next);
     window.clearTimeout(turnTimer.current);
-    turnTimer.current = window.setTimeout(() => setPageTurn(null), 980);
-  }, []);
+    if (previous === next) {
+      pageTurnRef.current = null;
+      setPageTurn(null);
+      return;
+    }
+    const turn = { from: previous, to: next, direction: next > previous ? 'forward' : 'backward', id: performance.now() } as PageTurn;
+    pageTurnRef.current = turn;
+    setPageTurn(turn);
+    turnTimer.current = window.setTimeout(() => completePageTurn(turn.id), 980);
+  }, [completePageTurn]);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -34,6 +57,10 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
   }, [activateStep]);
 
   const current = steps[active];
+  const leftIndex = pageTurn ? (pageTurn.direction === 'forward' ? pageTurn.from : pageTurn.to) : bookActive;
+  const rightIndex = pageTurn ? (pageTurn.direction === 'forward' ? pageTurn.to : pageTurn.from) : bookActive;
+  const leftPage = steps[leftIndex];
+  const rightPage = steps[rightIndex];
   const turningFrom = pageTurn ? steps[pageTurn.from] : current;
   const turningTo = pageTurn ? steps[pageTurn.to] : current;
   const noteFor = (index: number) => index === 0
@@ -70,11 +97,11 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
           <div className="page-shadow page-shadow-two" aria-hidden="true"></div><div className="page-shadow page-shadow-one" aria-hidden="true"></div>
           <div className="manuscript-book">
             <div className="manuscript-spread">
-              <div className="manuscript-page manuscript-page-left"><span className="page-running-head">W4U / {current.short}</span><div className="page-ghost-number">{current.number}</div><div className="page-rule"></div><small>FASE {current.number}</small><strong>{current.short}</strong><i className="page-folio">{String(active * 4 + 1).padStart(2, '0')}</i></div>
+              <div className="manuscript-page manuscript-page-left"><span className="page-running-head">W4U / {leftPage.short}</span><div className="page-ghost-number">{leftPage.number}</div><div className="page-rule"></div><small>FASE {leftPage.number}</small><strong>{leftPage.short}</strong><i className="page-folio">{String(leftIndex * 4 + 1).padStart(2, '0')}</i></div>
               <div className="manuscript-spine" aria-hidden="true"></div>
-              <div className="manuscript-page manuscript-page-right"><span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {current.number}</small><h4>{current.title}</h4><p>{current.text}</p><div className="page-writing-lines" aria-hidden="true"><i></i><i></i><i></i></div><i className="page-folio">{String(active * 4 + 2).padStart(2, '0')}</i></div>
+              <div className="manuscript-page manuscript-page-right"><span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {rightPage.number}</small><h4>{rightPage.title}</h4><p>{rightPage.text}</p><div className="page-writing-lines" aria-hidden="true"><i></i><i></i><i></i></div><i className="page-folio">{String(rightIndex * 4 + 2).padStart(2, '0')}</i></div>
             </div>
-            {pageTurn && <div className={`manuscript-turning-page is-${pageTurn.direction}`} key={pageTurn.id} aria-hidden="true" onAnimationEnd={() => setPageTurn((turn) => turn?.id === pageTurn.id ? null : turn)}>
+            {pageTurn && <div className={`manuscript-turning-page is-${pageTurn.direction}`} key={pageTurn.id} aria-hidden="true" onAnimationEnd={() => completePageTurn(pageTurn.id)}>
               <div className="turning-page-face turning-page-front">
                 {pageTurn.direction === 'forward' ? <>
                   <span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {turningFrom.number}</small><h4>{turningFrom.title}</h4><p>{turningFrom.text}</p><div className="page-writing-lines"><i></i><i></i><i></i></div>
