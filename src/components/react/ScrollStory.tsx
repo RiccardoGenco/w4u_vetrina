@@ -7,35 +7,48 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
   const [active, setActive] = useState(0);
   const [bookActive, setBookActive] = useState(0);
   const [pageTurn, setPageTurn] = useState<PageTurn | null>(null);
+  const [preparedTurn, setPreparedTurn] = useState<number | null>(null);
   const refs = useRef<Array<HTMLElement | null>>([]);
   const activeRef = useRef(0);
   const bookActiveRef = useRef(0);
   const pageTurnRef = useRef<PageTurn | null>(null);
   const turnTimer = useRef<number | undefined>(undefined);
+  const landingTimer = useRef<number | undefined>(undefined);
   const settleFrame = useRef<number | undefined>(undefined);
   const settlingTurn = useRef<number | null>(null);
+
+  const preparePageLanding = useCallback((id: number) => {
+    const turn = pageTurnRef.current;
+    if (!turn || turn.id !== id) return;
+    bookActiveRef.current = turn.to;
+    setBookActive(turn.to);
+    setPreparedTurn(id);
+  }, []);
 
   const completePageTurn = useCallback((id: number) => {
     const turn = pageTurnRef.current;
     if (!turn || turn.id !== id || settlingTurn.current === id) return;
     settlingTurn.current = id;
     window.clearTimeout(turnTimer.current);
-    bookActiveRef.current = turn.to;
-    setBookActive(turn.to);
+    window.clearTimeout(landingTimer.current);
+    preparePageLanding(id);
     settleFrame.current = window.requestAnimationFrame(() => {
       settleFrame.current = window.requestAnimationFrame(() => {
         if (pageTurnRef.current?.id !== id) return;
         pageTurnRef.current = null;
         settlingTurn.current = null;
+        setPreparedTurn(null);
         setPageTurn(null);
       });
     });
-  }, []);
+  }, [preparePageLanding]);
 
   const activateStep = useCallback((next: number) => {
     if (activeRef.current === next) return;
     window.cancelAnimationFrame(settleFrame.current ?? 0);
+    window.clearTimeout(landingTimer.current);
     settlingTurn.current = null;
+    setPreparedTurn(null);
     const pending = pageTurnRef.current;
     const previous = pending?.to ?? bookActiveRef.current;
     if (pending) {
@@ -53,8 +66,9 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
     const turn = { from: previous, to: next, direction: next > previous ? 'forward' : 'backward', id: performance.now() } as PageTurn;
     pageTurnRef.current = turn;
     setPageTurn(turn);
+    landingTimer.current = window.setTimeout(() => preparePageLanding(turn.id), 840);
     turnTimer.current = window.setTimeout(() => completePageTurn(turn.id), 1100);
-  }, [completePageTurn]);
+  }, [completePageTurn, preparePageLanding]);
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
@@ -65,13 +79,15 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
     return () => {
       observer.disconnect();
       window.clearTimeout(turnTimer.current);
+      window.clearTimeout(landingTimer.current);
       window.cancelAnimationFrame(settleFrame.current ?? 0);
     };
   }, [activateStep]);
 
   const current = steps[active];
-  const leftIndex = pageTurn ? (pageTurn.direction === 'forward' ? pageTurn.from : pageTurn.to) : bookActive;
-  const rightIndex = pageTurn ? (pageTurn.direction === 'forward' ? pageTurn.to : pageTurn.from) : bookActive;
+  const landingPrepared = pageTurn?.id === preparedTurn;
+  const leftIndex = pageTurn ? (landingPrepared ? pageTurn.to : pageTurn.direction === 'forward' ? pageTurn.from : pageTurn.to) : bookActive;
+  const rightIndex = pageTurn ? (landingPrepared ? pageTurn.to : pageTurn.direction === 'forward' ? pageTurn.to : pageTurn.from) : bookActive;
   const leftPage = steps[leftIndex];
   const rightPage = steps[rightIndex];
   const turningFrom = pageTurn ? steps[pageTurn.from] : current;
