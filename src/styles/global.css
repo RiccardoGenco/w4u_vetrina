@@ -272,11 +272,6 @@ body::before { content:""; position:fixed; z-index:120; inset:0; pointer-events:
 [data-theme="light"] .solutions-section { background:linear-gradient(180deg,transparent,rgba(14,116,144,.035),transparent); }
 [data-theme="light"] .solution-card { background:linear-gradient(145deg,#fff,#f4f8f9); box-shadow:0 24px 60px -42px rgba(15,23,42,.55); }
 
-.page-hero-art { justify-content:flex-start; }
-.page-hero-art>span { font-size:.75rem; }
-.page-hero-art>strong { max-width:9ch; margin-top:auto; color:#67e8f9; font-family:"Outfit"; font-size:clamp(1.8rem,3vw,3rem); line-height:.95; }
-.page-hero-art .page-cover-title { max-width:18rem; margin:.85rem 0 1.8rem; color:#ecfeff; font-size:.88rem; line-height:1.55; }
-.page-hero-art>div { width:100%; margin:0 0 auto; }
 .page-hero::after { font-size:.75rem; }
 .tag,.timeline small,.feature-detail-list small,.resource-card>span,.final-cover>span { font-size:.75rem; }
 .breadcrumbs ol { font-size:.75rem; }
@@ -312,4 +307,62 @@ body::before { content:""; position:fixed; z-index:120; inset:0; pointer-events:
   .formats-section::after { font-size:17vw; }
   .site-footer { padding-top:4rem; }
   .footer-bottom { margin-top:3rem; }
+}
+
+/* Pagine interne — console editoriale, coerente con la hero della home */
+.page-hero-grid { grid-template-columns:minmax(0,1.08fr) minmax(340px,.62fr); gap:clamp(3rem,6vw,6rem); }
+.page-hero-art { position:relative; z-index:1; isolation:isolate; min-height:540px; aspect-ratio:auto; display:block; padding:0; border:0; border-radius:0; background:none; box-shadow:none; transform:none; animation:none; perspective:1200px; }
+.page-hero-art::before,.page-hero-art::after { content:""; position:absolute; inset:7% 2% 5% 7%; z-index:-2; border:1px solid var(--border-strong); border-radius:34px; background:linear-gradient(145deg,rgba(14,116,144,.2),rgba(34,211,238,.035)); }
+.page-hero-art::before { transform:rotate(4deg) translate(22px,12px); }
+.page-hero-art::after { z-index:-3; opacity:.55; transform:rotate(8deg) translate(42px,22px); }
+.page-hero-art>div { width:auto; margin:0; }
+
+.page-hero-art>.page-art-orbits { position:absolute; inset:1% -7% -3% -4%; z-index:-1; display:block; gap:0; pointer-events:none; }
+.page-hero-art .page-art-orbits i { position:absolute; inset:0; width:auto; height:auto; display:block; border:1px solid var(--border-strong); border-radius:50%; background:none; animation:folio-orbit 28s linear infinite; }
+.page-art-orbits i:nth-child(2) { inset:9%; animation-duration:36s; animation-direction:reverse; }
+.page-art-orbits i:nth-child(3) { inset:19%; animation-duration:22s; }
+
+.page-hero-art>.page-art-window { position:absolute; z-index:2; inset:4.5% 1.5% 4% 2%; display:block; gap:0; overflow:hidden; border:1px solid var(--border-strong); border-radius:28px; background:color-mix(in srgb,var(--bg-card-solid) 94%,transparent); box-shadow:var(--shadow-card); transform:perspective(1200px) rotateY(-3deg) rotateX(1deg); animation:page-art-float 6s ease-in-out infinite; backdrop-filter:blur(22px); }
+.page-art-topbar { min-height:58px; display:flex; align-items:center; gap:.85rem; padding:0 1rem; border-bottom:1px solid var(--border); background:color-mix(in srgb,var(--bg-card-solid) 72%,transparent); }
+.page-art-symbol { width:30px; height:30px; display:grid; flex:0 0 auto; place-items:center; border-radius:9px; background:linear-gradient(135deg,var(--primary),var(--accent)); color:var(--text-on-primary); font-family:"Outfit"; font-size:.8rem; font-weight:800; }
+.page-art-progress { height:4px; flex:1; overflow:hidden; border-radius:99px; background:var(--bg-elevated); }
+.page-art-progress i { display:block; width:38%; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--primary),var(--accent)); box-shadow:0 0 14px rgba(34,211,238,.55); }
+.page-art-status { display:flex; align-items:center; gap:.35rem; color:var(--text-soft); font-size:.75rem; white-space:nowrap; }
+.page-art-status i { width:7px; height:7px; display:block; border-radius:50%; background:var(--success); box-shadow:0 0 10px color-mix(in srgb,var(--success) 70%,transparent); }
+
+.page-art-workspace { min-height:430px; display:grid; grid-template-columns:58px 1fr; }
+.page-art-rail { display:flex; flex-direction:column; align-items:center; gap:.75rem; padding:1.25rem .65rem; border-right:1px solid var(--border); background:color-mix(in srgb,var(--bg-card-solid) 76%,transparent); }
+.page-art-rail span { width:30px; height:30px; display:grid; place-items:center; border:1px solid var(--border); border-radius:9px; color:var(--text-soft); font-family:"Outfit"; font-size:.75rem; font-weight:700; }
+.page-art-rail .is-complete { color:var(--success); }
+.page-art-rail .is-active { border-color:var(--border-strong); background:var(--bg-active); color:var(--accent); box-shadow:0 0 0 5px color-mix(in srgb,var(--bg-active) 70%,transparent); }
+
+.page-art-canvas { min-width:0; display:flex; flex-direction:column; margin:1.15rem; padding:clamp(1.5rem,2.7vw,2.2rem); overflow:hidden; border:1px solid rgba(103,232,249,.2); border-radius:6px 22px 22px 6px; background:radial-gradient(circle at 100% 0%,rgba(34,211,238,.18),transparent 16rem),linear-gradient(145deg,#083344,#071821 58%,#0f172a); color:#ecfeff; box-shadow:0 26px 60px rgba(0,0,0,.28); }
+.page-art-kicker { padding-bottom:.8rem; border-bottom:1px solid rgba(255,255,255,.14); color:#67e8f9; font-size:.75rem; font-weight:800; letter-spacing:.12em; }
+.page-art-canvas>strong { max-width:12ch; margin-top:auto; color:#ecfeff; font-family:"Outfit"; font-size:clamp(1.7rem,2.8vw,3rem); line-height:.94; letter-spacing:-.04em; overflow-wrap:anywhere; }
+.page-art-canvas>p { max-width:29ch; margin:.85rem 0 1.25rem; color:#bae6fd; font-size:.84rem; line-height:1.55; }
+.page-art-lines { display:grid; gap:.48rem; }
+.page-art-lines i { display:block; width:100%; height:1px; background:rgba(255,255,255,.14); }
+.page-art-lines i:nth-child(2){width:72%}.page-art-lines i:nth-child(3){width:88%}
+.page-art-footer { display:flex; justify-content:space-between; gap:1rem; margin-top:1.2rem; padding-top:.8rem; border-top:1px solid rgba(255,255,255,.14); color:#a5f3fc; font-size:.75rem; font-weight:700; letter-spacing:.08em; }
+.page-art-footer b { color:#22d3ee; font-family:"Outfit"; }
+
+.page-hero-art>.page-art-chip { position:absolute; z-index:4; min-width:176px; display:grid; grid-template-columns:32px auto; gap:0 .65rem; padding:.8rem .95rem; border:1px solid var(--border-strong); border-radius:14px; background:color-mix(in srgb,var(--bg-card-solid) 94%,transparent); color:var(--text-main); box-shadow:var(--shadow-card); backdrop-filter:blur(18px); animation:page-chip-float 5s ease-in-out infinite; }
+.page-art-chip>span { grid-row:1/3; width:32px; height:32px; display:grid; place-items:center; border-radius:10px; background:var(--bg-active); color:var(--accent); }
+.page-art-chip b,.page-art-chip small { font-size:.75rem; }
+.page-art-chip small { margin-top:.15rem; color:var(--text-soft); }
+.page-art-chip-top { left:-1.7rem; top:0; }
+.page-art-chip-bottom { right:-1.2rem; bottom:-.5rem; animation-delay:-2.4s; }
+
+@keyframes page-art-float { 50%{transform:perspective(1200px) translateY(-11px) rotateY(-1deg) rotateX(0deg)} }
+@keyframes page-chip-float { 50%{transform:translateY(-8px)} }
+
+@media(max-width:1120px){
+  .page-art-chip { display:none; }
+  .page-art-canvas { margin:.9rem; padding:1.4rem; }
+  .page-art-canvas>strong { font-size:clamp(1.5rem,2.6vw,2.35rem); }
+}
+
+@media(max-width:960px){
+  .page-hero-grid { grid-template-columns:1fr; }
+  .page-hero-art { display:none; }
 }

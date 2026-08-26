@@ -8,11 +8,28 @@ const { eyebrow, title, description, cta = 'Crea il tuo progetto' } = Astro.prop
   <div class="site-shell page-hero-grid">
     <div><div class="eyebrow"><span></span>{eyebrow}</div><h1>{title}</h1><p>{description}</p><a class="button" href={appLink('/register')}>{cta} <span>→</span></a></div>
     <div class="page-hero-art" aria-hidden="true">
-      <span>W4U / {eyebrow}</span>
-      <strong>{eyebrow}</strong>
-      <p class="page-cover-title">{title}</p>
-      <div><i></i><i></i><i></i><i></i></div>
-      <b>01 — 08</b>
+      <div class="page-art-orbits"><i></i><i></i><i></i></div>
+      <div class="page-art-window">
+        <div class="page-art-topbar">
+          <span class="page-art-symbol">W</span>
+          <span class="page-art-progress"><i></i></span>
+          <span class="page-art-status"><i></i> Progetto attivo</span>
+        </div>
+        <div class="page-art-workspace">
+          <div class="page-art-rail">
+            <span class="is-complete">✓</span><span class="is-active">01</span><span>02</span><span>03</span>
+          </div>
+          <div class="page-art-canvas">
+            <span class="page-art-kicker">W4U / {eyebrow}</span>
+            <strong>{eyebrow}</strong>
+            <p>{title}</p>
+            <div class="page-art-lines"><i></i><i></i><i></i></div>
+            <div class="page-art-footer"><span>CAPITOLO 01</span><b>01 / 08</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="page-art-chip page-art-chip-top"><span>✦</span><b>Percorso guidato</b><small>Una scelta alla volta</small></div>
+      <div class="page-art-chip page-art-chip-bottom"><span>✓</span><b>Stato salvato</b><small>Riprendi quando vuoi</small></div>
     </div>
   </div>
 </section>
