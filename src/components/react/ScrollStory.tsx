@@ -12,18 +12,30 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
   const bookActiveRef = useRef(0);
   const pageTurnRef = useRef<PageTurn | null>(null);
   const turnTimer = useRef<number | undefined>(undefined);
+  const settleFrame = useRef<number | undefined>(undefined);
+  const settlingTurn = useRef<number | null>(null);
 
   const completePageTurn = useCallback((id: number) => {
     const turn = pageTurnRef.current;
-    if (!turn || turn.id !== id) return;
+    if (!turn || turn.id !== id || settlingTurn.current === id) return;
+    settlingTurn.current = id;
+    window.clearTimeout(turnTimer.current);
     bookActiveRef.current = turn.to;
     setBookActive(turn.to);
-    pageTurnRef.current = null;
-    setPageTurn(null);
+    settleFrame.current = window.requestAnimationFrame(() => {
+      settleFrame.current = window.requestAnimationFrame(() => {
+        if (pageTurnRef.current?.id !== id) return;
+        pageTurnRef.current = null;
+        settlingTurn.current = null;
+        setPageTurn(null);
+      });
+    });
   }, []);
 
   const activateStep = useCallback((next: number) => {
     if (activeRef.current === next) return;
+    window.cancelAnimationFrame(settleFrame.current ?? 0);
+    settlingTurn.current = null;
     const pending = pageTurnRef.current;
     const previous = pending?.to ?? bookActiveRef.current;
     if (pending) {
@@ -41,7 +53,7 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
     const turn = { from: previous, to: next, direction: next > previous ? 'forward' : 'backward', id: performance.now() } as PageTurn;
     pageTurnRef.current = turn;
     setPageTurn(turn);
-    turnTimer.current = window.setTimeout(() => completePageTurn(turn.id), 980);
+    turnTimer.current = window.setTimeout(() => completePageTurn(turn.id), 1100);
   }, [completePageTurn]);
 
   useEffect(() => {
@@ -53,6 +65,7 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
     return () => {
       observer.disconnect();
       window.clearTimeout(turnTimer.current);
+      window.cancelAnimationFrame(settleFrame.current ?? 0);
     };
   }, [activateStep]);
 
@@ -101,7 +114,10 @@ export default function ScrollStory({ steps }: { steps: Step[] }) {
               <div className="manuscript-spine" aria-hidden="true"></div>
               <div className="manuscript-page manuscript-page-right"><span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {rightPage.number}</small><h4>{rightPage.title}</h4><p>{rightPage.text}</p><div className="page-writing-lines" aria-hidden="true"><i></i><i></i><i></i></div><i className="page-folio">{String(rightIndex * 4 + 2).padStart(2, '0')}</i></div>
             </div>
-            {pageTurn && <div className={`manuscript-turning-page is-${pageTurn.direction}`} key={pageTurn.id} aria-hidden="true" onAnimationEnd={() => completePageTurn(pageTurn.id)}>
+            {pageTurn && <div className={`manuscript-turning-page is-${pageTurn.direction}`} key={pageTurn.id} aria-hidden="true" onAnimationEnd={(event) => {
+              if (event.animationName !== `manuscript-page-${pageTurn.direction}`) return;
+              completePageTurn(pageTurn.id);
+            }}>
               <div className="turning-page-face turning-page-front">
                 {pageTurn.direction === 'forward' ? <>
                   <span className="page-running-head">IL TUO PROGETTO</span><small>CAPITOLO {turningFrom.number}</small><h4>{turningFrom.title}</h4><p>{turningFrom.text}</p><div className="page-writing-lines"><i></i><i></i><i></i></div>
